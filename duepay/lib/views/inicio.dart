@@ -1,21 +1,16 @@
+import 'package:duepay/models/usuario.dart';
 import 'package:duepay/util/routes.dart';
 import 'package:flutter/material.dart';
 
 class Inicio extends StatefulWidget {
-  final String usuario;
-  Inicio({Key key, @required this.usuario}) : super(key: key);
+  final Usuario user;
+  Inicio({Key key, @required this.user}) : super(key: key);
 
   @override
   _InicioState createState() => _InicioState();
 }
 
 class _InicioState extends State<Inicio> {
-  @override
-  void initState() {
-    print(widget.usuario);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,9 +25,9 @@ class _InicioState extends State<Inicio> {
           color: Colors.green,
           textColor: Colors.white,
           padding: EdgeInsets.fromLTRB(9, 9, 9, 9),
-          child: Text('Click Here To Login'),
+          child: Text('Extrato'),
         ),
-        Text(widget.usuario),
+        Text(widget.user.nome),
       ]),
       drawer: Container(
           width: 250,
