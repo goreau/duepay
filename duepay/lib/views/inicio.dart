@@ -36,10 +36,27 @@ class _InicioState extends State<Inicio> {
       drawer: Container(
           width: 250,
           child: Drawer(
-            child: ListView.builder(
-              itemCount: menu.length,
-              itemBuilder: (ctx, i) => MenuTile(menu.values.elementAt(i)),
-            ),
+            child: ListView(padding: EdgeInsets.zero, children: <Widget>[
+              Container(
+                height: 85.0,
+                child: DrawerHeader(
+                  child: Text(
+                    'Duepay',
+                    style: new TextStyle(fontSize: 18.0, color: Colors.white),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                  ),
+                ),
+              ),
+              Container(
+                height: double.maxFinite,
+                child: ListView.builder(
+                  itemCount: menu.length,
+                  itemBuilder: (ctx, i) => MenuTile(menu.values.elementAt(i)),
+                ),
+              ),
+            ]),
           )),
     );
   }
