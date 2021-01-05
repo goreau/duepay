@@ -1,3 +1,5 @@
+import 'package:duepay/components/menu_tile.dart';
+import 'package:duepay/data/dummy_menu.dart';
 import 'package:duepay/models/usuario.dart';
 import 'package:duepay/util/routes.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,8 @@ class Inicio extends StatefulWidget {
 class _InicioState extends State<Inicio> {
   @override
   Widget build(BuildContext context) {
+    const menu = {...DUMY_MENU};
+
     return Scaffold(
       appBar: AppBar(
         title: Text('DuePay'),
@@ -32,19 +36,10 @@ class _InicioState extends State<Inicio> {
       drawer: Container(
           width: 250,
           child: Drawer(
-            child: ListView(children: <Widget>[
-              Container(
-                height: 100,
-                child: DrawerHeader(
-                  child: ListTile(
-                    leading: Icon(Icons.bug_report),
-                    title: Text('DuePay'),
-                    subtitle: Text('Blá blá blá'),
-                  ),
-                  decoration: BoxDecoration(color: Colors.greenAccent),
-                ),
-              ),
-            ]),
+            child: ListView.builder(
+              itemCount: menu.length,
+              itemBuilder: (ctx, i) => MenuTile(menu.values.elementAt(i)),
+            ),
           )),
     );
   }
