@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class Comunica {
-  final server = 'http://10.0.2.2:82/';
+  //static final server = 'http://10.0.2.2:82/';
+  static final server = 'https://api.duebank.com.br/';
 
-  Future<String> login(String usuario, String senha) async {
+  static Future<String> login(String usuario, String senha) async {
     var url = server + 'login/authentication';
 
     // Store all data with Param Name.

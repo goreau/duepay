@@ -3,7 +3,6 @@ import 'package:duepay/comunicacao/comunica.dart';
 import 'package:duepay/models/usuario.dart';
 import 'package:duepay/views/inicio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class Login extends StatefulWidget {
   @override
@@ -29,20 +28,8 @@ class LoginState extends State<Login> {
     String usuario = usuarioController.text;
     String senha = senhaController.text;
 
-    /*/ SERVER LOGIN API URL
-    var url = 'login/authentication';
-
-    // Store all data with Param Name.
-    var data = {'usuario': email, 'senha': password};
-
-    // Starting Web API Call.
-    var response = await http.post(url,
-        body: json.encode(data), headers: {'Content-Type': 'application/json'});*/
-
-    Comunica com = Comunica();
-
     // Getting Server response into variable.
-    var message = jsonDecode(await com.login(usuario, senha));
+    var message = jsonDecode(await Comunica.login(usuario, senha));
 
     // If the Response Message is Matched.
     if (message['success']) {
@@ -63,13 +50,22 @@ class LoginState extends State<Login> {
       setState(() {
         visible = false;
       });
+      String ret = message['message'];
+      String msg;
+      //trata o retorno da função
+      if (ret.indexOf('SQLSTATE') >= 0) {
+        msg =
+            'Problemas ao conectar com a base de dados. Tente novamente mais tarde.';
+      } else {
+        msg = ret;
+      }
 
       // Showing Alert Dialog with Response JSON Message.
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: new Text(message),
+            title: new Text(msg),
             actions: <Widget>[
               FlatButton(
                 child: new Text("OK"),
@@ -94,45 +90,45 @@ class LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SingleChildScrollView(
-            child: Center(
-      child: Column(
-        children: <Widget>[
-          Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text('User Login Form', style: TextStyle(fontSize: 21))),
-          Divider(),
-          Container(
-              width: 280,
-              padding: EdgeInsets.all(10.0),
-              child: TextField(
-                controller: usuarioController,
-                autocorrect: true,
-                decoration: InputDecoration(hintText: 'Nº do Cartão'),
-              )),
-          Container(
-              width: 280,
-              padding: EdgeInsets.all(10.0),
-              child: TextField(
-                controller: senhaController,
-                autocorrect: true,
-                obscureText: true,
-                decoration: InputDecoration(hintText: 'Senha Web'),
-              )),
-          RaisedButton(
-            onPressed: userLogin,
-            color: Colors.green,
-            textColor: Colors.white,
-            padding: EdgeInsets.fromLTRB(9, 9, 9, 9),
-            child: Text('Entrar'),
+        body: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Container(
+            width: 280,
+            padding: EdgeInsets.all(10.0),
+            child: TextField(
+              controller: usuarioController,
+              autocorrect: true,
+              decoration: InputDecoration(hintText: 'Nº do Cartão'),
+              style: TextStyle(fontSize: 12),
+            )),
+        Divider(),
+        Container(
+            width: 280,
+            padding: EdgeInsets.all(10.0),
+            child: TextField(
+              controller: senhaController,
+              autocorrect: true,
+              obscureText: true,
+              decoration: InputDecoration(hintText: 'Senha Web'),
+              style: TextStyle(fontSize: 12),
+            )),
+        RaisedButton(
+          onPressed: userLogin,
+          color: Color.fromRGBO(57, 72, 87, 1),
+          textColor: Colors.white,
+          padding: EdgeInsets.fromLTRB(9, 9, 9, 9),
+          child: Text('Entrar'),
+        ),
+        Visibility(
+          visible: visible,
+          child: Container(
+            margin: EdgeInsets.only(bottom: 30),
+            child: CircularProgressIndicator(),
           ),
-          Visibility(
-              visible: visible,
-              child: Container(
-                  margin: EdgeInsets.only(bottom: 30),
-                  child: CircularProgressIndicator())),
-        ],
-      ),
-    )));
+        ),
+      ],
+    ));
   }
 }
