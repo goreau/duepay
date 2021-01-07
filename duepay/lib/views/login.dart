@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:duepay/comunicacao/comunica.dart';
 import 'package:duepay/models/usuario.dart';
+import 'package:duepay/util/storage.dart';
 import 'package:duepay/views/inicio.dart';
 import 'package:flutter/material.dart';
 
@@ -39,8 +40,20 @@ class LoginState extends State<Login> {
       });
 
       var ret = message['usuario'];
-      user = Usuario(ret['id'], ret['usuario'], ret['nome'], ret['sobrenome'],
-          ret['perfil'], ret['status'], ret['cartao_corporativo']);
+      var tk = message['token'];
+      user = Usuario(
+        ret['id'],
+        ret['usuario'],
+        ret['nome'],
+        ret['sobrenome'],
+        ret['perfil'],
+        ret['status'],
+        ret['cartao_corporativo'],
+        tk,
+        senha,
+      );
+
+      Storage.insere('user', user.toJson());
       // Navigate to Profile Screen & Sending Email to Next Screen.
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => Inicio(user: user)));
@@ -83,8 +96,8 @@ class LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    usuarioController.text = '63608503201807664';
-    senhaController.text = '';
+    usuarioController.text = '63608503201329803'; //'63608503201807664';
+    senhaController.text = '170882';
   }
 
   @override

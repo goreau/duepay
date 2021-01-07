@@ -1,8 +1,34 @@
+import 'package:duepay/models/usuario.dart';
 import 'package:duepay/util/routes.dart';
+import 'package:duepay/util/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
-class Emprestimo extends StatelessWidget {
+class Emprestimo extends StatefulWidget {
+  @override
+  _EmprestimoState createState() => _EmprestimoState();
+}
+
+class _EmprestimoState extends State<Emprestimo> {
+  Usuario logUser;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  loadUser() async {
+    try {
+      Usuario user = Usuario.fromJson(await Storage.recupera("user"));
+      setState(() {
+        logUser = user;
+      });
+    } catch (Excepetion) {
+      print('fodeu' + Excepetion.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -12,13 +38,15 @@ class Emprestimo extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // Text(logUser.token),
             Container(
               color: Colors.white,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   TimelineTile(
-                    alignment: TimelineAlign.start,
+                    alignment: TimelineAlign.manual,
+                    lineXY: 0.1,
                     isFirst: true,
                     indicatorStyle: IndicatorStyle(
                       width: 30,
@@ -53,8 +81,13 @@ class Emprestimo extends StatelessWidget {
                       ),
                     ),
                   ),
+                  TimelineDivider(
+                    begin: 0.1,
+                    end: 0.9,
+                  ),
                   TimelineTile(
-                    alignment: TimelineAlign.start,
+                    alignment: TimelineAlign.manual,
+                    lineXY: 0.9,
                     isFirst: false,
                     indicatorStyle: IndicatorStyle(
                       width: 30,
@@ -65,7 +98,7 @@ class Emprestimo extends StatelessWidget {
                         iconData: Icons.star,
                       ),
                     ),
-                    endChild: Container(
+                    startChild: Container(
                       child: Card(
                         color: Colors.grey[100],
                         child: InkWell(
@@ -90,8 +123,13 @@ class Emprestimo extends StatelessWidget {
                       ),
                     ),
                   ),
+                  TimelineDivider(
+                    begin: 0.1,
+                    end: 0.9,
+                  ),
                   TimelineTile(
-                    alignment: TimelineAlign.start,
+                    alignment: TimelineAlign.manual,
+                    lineXY: 0.1,
                     isFirst: false,
                     indicatorStyle: IndicatorStyle(
                       width: 30,
@@ -125,8 +163,13 @@ class Emprestimo extends StatelessWidget {
                       ),
                     ),
                   ),
+                  TimelineDivider(
+                    begin: 0.1,
+                    end: 0.9,
+                  ),
                   TimelineTile(
-                    alignment: TimelineAlign.start,
+                    alignment: TimelineAlign.manual,
+                    lineXY: 0.9,
                     isFirst: false,
                     indicatorStyle: IndicatorStyle(
                       width: 30,
@@ -137,7 +180,7 @@ class Emprestimo extends StatelessWidget {
                         iconData: Icons.star,
                       ),
                     ),
-                    endChild: Container(
+                    startChild: Container(
                       child: Card(
                         color: Colors.grey[100],
                         child: InkWell(
@@ -159,8 +202,13 @@ class Emprestimo extends StatelessWidget {
                       ),
                     ),
                   ),
+                  TimelineDivider(
+                    begin: 0.1,
+                    end: 0.9,
+                  ),
                   TimelineTile(
-                    alignment: TimelineAlign.start,
+                    alignment: TimelineAlign.manual,
+                    lineXY: 0.1,
                     isLast: true,
                     indicatorStyle: IndicatorStyle(
                       width: 30,

@@ -15,8 +15,8 @@ class Inicio extends StatefulWidget {
 class _InicioState extends State<Inicio> {
   @override
   Widget build(BuildContext context) {
-    // const menu = {...DUMMY_MENU};
-    const menu = {};
+    const menu = {...DUMMY_MENU};
+    //const menu = {};
     return Scaffold(
       appBar: AppBar(
         title: Text('DuePay'),
@@ -25,6 +25,7 @@ class _InicioState extends State<Inicio> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
+            Text(widget.user.nome),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -35,7 +36,7 @@ class _InicioState extends State<Inicio> {
                       Navigator.of(context).pushNamed(Routes.EXTRATO);
                     },
                     shape: new RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(30.0)),
+                        borderRadius: new BorderRadius.circular(10.0)),
                     color: Colors.blue,
                     padding: EdgeInsets.all(10.0),
                     child: Column(
@@ -63,7 +64,7 @@ class _InicioState extends State<Inicio> {
                     },
                     color: Colors.blue,
                     shape: new RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(30.0)),
+                        borderRadius: new BorderRadius.circular(10.0)),
                     padding: EdgeInsets.all(10.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -84,7 +85,6 @@ class _InicioState extends State<Inicio> {
                 ),
               ],
             ),
-            Text(widget.user.nome),
           ]),
       drawer: Container(
           width: 250,
