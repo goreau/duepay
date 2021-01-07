@@ -15,8 +15,8 @@ class Inicio extends StatefulWidget {
 class _InicioState extends State<Inicio> {
   @override
   Widget build(BuildContext context) {
-    const menu = {...DUMY_MENU};
-
+    // const menu = {...DUMMY_MENU};
+    const menu = {};
     return Scaffold(
       appBar: AppBar(
         title: Text('DuePay'),

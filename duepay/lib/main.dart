@@ -1,5 +1,7 @@
 import 'package:duepay/util/routes.dart';
 import 'package:duepay/views/emprestimo.dart';
+import 'package:duepay/views/emprestimo/consulta.dart';
+import 'package:duepay/views/emprestimo/simulacao.dart';
 import 'package:duepay/views/extrato.dart';
 import 'package:duepay/views/login.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +23,7 @@ class MyApp extends StatelessWidget {
           accentColor: Color.fromRGBO(57, 72, 87, 1),
 
           // Define the default font family.
-          fontFamily: 'Georgia',
+          fontFamily: 'Arial',
 
           // Define the default TextTheme. Use this to specify the default
           // text styling for headlines, titles, bodies of text, and more.
@@ -36,6 +38,8 @@ class MyApp extends StatelessWidget {
           Routes.LOGIN: (_) => Login(),
           Routes.EXTRATO: (_) => Extrato(),
           Routes.EMPRESTIMO: (_) => Emprestimo(),
+          Routes.EMP_SIMULA: (_) => Simulacao(),
+          Routes.EMP_CONSULTA: (_) => Consulta(),
         },
         home: Scaffold(
             appBar: AppBar(title: Text('Login')),

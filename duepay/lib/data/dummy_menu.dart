@@ -1,7 +1,7 @@
 import 'package:duepay/models/menu.dart';
 import 'package:flutter/material.dart';
 
-const DUMY_MENU = {
+const DUMMY_MENU = {
   '1': const Menu(
     title: 'Extrato',
     subtitle: 'Consulte suas últimas transações',

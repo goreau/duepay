@@ -83,8 +83,8 @@ class LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    usuarioController.text = '63608503201821138';
-    senhaController.text = '3798514';
+    usuarioController.text = '63608503201807664';
+    senhaController.text = '';
   }
 
   @override
