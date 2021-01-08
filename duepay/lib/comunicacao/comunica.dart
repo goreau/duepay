@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'package:duepay/util/storage.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class Comunica {
@@ -17,5 +18,14 @@ class Comunica {
         body: json.encode(data), headers: {'Content-Type': 'application/json'});
 
     return response.body;
+  }
+
+  static bool checkToken(String resp) {
+    if (resp == 'Token Invalido!') {
+      Storage.remove('user');
+      //Navigator.of(context).pushNamed(Routes.EXTRATO);
+      return false;
+    }
+    return true;
   }
 }
