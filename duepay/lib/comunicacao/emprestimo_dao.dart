@@ -2,8 +2,8 @@ import 'package:duepay/models/usuario.dart';
 import 'package:http/http.dart' as http;
 
 class EmprestimoDao {
-  static final server = 'http://10.0.2.2:82/';
-  //static final server = 'https://api.duebank.com.br/';
+  //static final server = 'http://10.0.2.2:82/';
+  static final server = 'https://api.duebank.com.br/';
 
   static Future<String> getSaldo(Usuario user) async {
     var url = server + 'bank/getsaldousuarioemprestimo';
