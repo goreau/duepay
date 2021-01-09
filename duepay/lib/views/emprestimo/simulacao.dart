@@ -116,7 +116,15 @@ class _SimulacaoState extends State<Simulacao> {
                 visible: tabela,
                 child: Container(
                   margin: EdgeInsets.only(bottom: 30),
-                  child: tab,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Column(
+                      children: [
+                        Text('Parcelas'),
+                        tab,
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ]),
@@ -170,6 +178,132 @@ class _SimulacaoState extends State<Simulacao> {
   }
 
   criaTabela(List<dynamic> lista) {
+    String line = '';
+    for (int i = 0; i < lista.length; i++) {
+      final coisa = jsonDecode(lista[i]['dados']);
+
+      line += coisa[0]['numero_parcelas'].toString() +
+          ',' +
+          coisa[0]['valor_parcela'].toString() +
+          ',' +
+          coisa[0]['total'].toString() +
+          ';';
+    }
+    line = line.substring(0, line.length - 1);
+
+    return DataTable(
+      columns: [
+        DataColumn(
+          label: Text('No'),
+        ),
+        DataColumn(
+          label: Text('VALOR'),
+        ),
+        DataColumn(
+          label: Text('TOTAL'),
+        ),
+        DataColumn(
+          label: Text('SELEC.'),
+        ),
+      ],
+      rows: _criarLinhaTable(line),
+    );
+  }
+
+  _criarLinhaTable(String listaNomes) {
+    int val = 0;
+    int cont = 0;
+    List<DataRow> rows = [];
+    List<Tabela> linhas = [];
+    listaNomes.split(';').map((linha) {
+      List<String> p = linha.split(',');
+      Tabela t =
+          Tabela(int.parse(p[0]), double.parse(p[1]), double.parse(p[2]));
+      linhas.add(t);
+    }).toList();
+    linhas
+        .map((item) => rows.add(
+              DataRow(
+                cells: [
+                  DataCell(
+                    Text(item.numero_parcelas.toString()),
+                    showEditIcon: false,
+                    placeholder: false,
+                  ),
+                  DataCell(
+                    Text(item.valor_parcelas.toString()),
+                    showEditIcon: false,
+                    placeholder: false,
+                  ),
+                  DataCell(
+                    Text(item.total.toString()),
+                    showEditIcon: false,
+                    placeholder: false,
+                  ),
+                  DataCell(
+                      Icon(
+                        Icons.thumb_up_alt,
+                        color: Color.fromRGBO(214, 168, 76, 1),
+                      ),
+                      showEditIcon: false,
+                      placeholder: false, onTap: () {
+                    seleciona(item.numero_parcelas);
+                  }),
+                ],
+              ),
+            ))
+        .toList();
+    return rows;
+  }
+
+/*
+  _criarLinhaTable(String listaNomes) {
+    int val = 0;
+    int cont = 0;
+    List<DataRow> rows = [];
+    listaNomes.split(';').map((linha) {
+      List<DataCell> cell = [];
+      linha.split(',').map((name) {
+        val = cont++ == 0 ? int.parse(name) : val;
+        cell.add(
+          DataCell(
+            Text(name),
+            showEditIcon: false,
+            placeholder: false,
+          ),
+        );
+      }).toList();
+      cell.add(
+        DataCell(
+            IconButton(
+              icon: new Icon(
+                Icons.thumb_up_alt,
+                color: Color.fromRGBO(214, 168, 76, 1),
+              ),
+              onPressed: () {
+                seleciona(1);
+              },
+            ), onTap: () {
+          print(val);
+        }),
+      );
+      rows.add(DataRow(
+        cells: cell,
+        onSelectChanged: (bool selected) {
+          if (selected) {
+            var xx = cell[0].child;
+            print('row-selected: $xx');
+          }
+        },
+      ));
+      cont = 0;
+    }).toList();
+
+    return rows;
+  }*/
+
+/*
+criaTabela(List<dynamic> lista) {
     String line = 'PARCELAS,VALOR PARC,TOTAL';
     for (int i = 0; i < lista.length; i++) {
       final coisa = jsonDecode(lista[i]['dados']);
@@ -181,49 +315,64 @@ class _SimulacaoState extends State<Simulacao> {
           ',' +
           coisa[0]['total'].toString();
     }
-    print('linha: $line');
     return Table(
-      defaultColumnWidth: FixedColumnWidth(150.0),
-      border: TableBorder(
-        horizontalInside: BorderSide(
-          color: Colors.black,
-          style: BorderStyle.solid,
-          width: 1.0,
-        ),
-        verticalInside: BorderSide(
-          color: Colors.black,
-          style: BorderStyle.solid,
-          width: 1.0,
-        ),
-      ),
-      children: [
-        /* for (int i = 0; i < lista.length; i++){
-              _criarLinhaTable(lista[i].toString());
-            }*/
-        _criarLinhaTable(line),
-        /*  _criarLinhaTable("25, Palmeiras,16 "),
-        _criarLinhaTable("20, Santos, 5"),
-        _criarLinhaTable("17, Flamento, 6"),*/
-      ],
+      border: TableBorder.all(),
+      children: _criarLinhaTable(line),
     );
   }
 
   _criarLinhaTable(String listaNomes) {
-    return TableRow(
-      children: listaNomes.split(';').map((linha) {
-        linha.split(',').map((name) {
-          return Container(
-            alignment: Alignment.center,
+    List<TableRow> rows = [];
+    int count = 0;
+    int pula = 0;
+    int parc = 0;
+    listaNomes.split(';').map((linha) {
+      List<Widget> cell = [];
+      linha.split(',').map((name) {
+        if (pula > 0) {
+          parc = count++ == 0 ? int.parse(name) : parc;
+        }
+        cell.add(
+          Center(
             child: Text(
               name,
               style: TextStyle(fontSize: 12.0),
             ),
-            padding: EdgeInsets.all(8.0),
-          );
-        });
-      }).toList(),
-    );
+          ),
+        );
+      }).toList();
+      if (pula++ == 0) {
+        cell.add(Text('SELECIONAR'));
+      } else {
+        cell.add(IconButton(
+            icon: new Icon(
+              Icons.thumb_up_alt,
+              color: Color.fromRGBO(214, 168, 76, 1),
+            ),
+            onPressed: () {
+              seleciona(parc);
+            }));
+      }
+      count = 0;
+      rows.add(TableRow(
+        children: cell,
+      ));
+    }).toList();
+
+    return rows;
   }
+*/
+  seleciona(int opt) {
+    print(opt);
+  }
+}
+
+class Tabela {
+  int numero_parcelas;
+  double valor_parcelas;
+  double total;
+
+  Tabela(this.numero_parcelas, this.valor_parcelas, this.total);
 }
 
 class UserEmprestimo {
