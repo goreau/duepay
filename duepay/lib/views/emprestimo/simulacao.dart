@@ -118,12 +118,12 @@ class _SimulacaoState extends State<Simulacao> {
                   margin: EdgeInsets.only(bottom: 30),
                   child: SizedBox(
                     width: double.infinity,
-                    child: Column(
+                    child: tabela ? Column(
                       children: [
                         Text('Parcelas'),
                         tab,
                       ],
-                    ),
+                    ) : null,
                   ),
                 ),
               ),

@@ -2,6 +2,7 @@ import 'package:duepay/util/routes.dart';
 import 'package:duepay/views/emprestimo.dart';
 import 'package:duepay/views/emprestimo/consulta.dart';
 import 'package:duepay/views/emprestimo/simulacao.dart';
+import 'package:duepay/views/emprestimo/timeline.dart';
 import 'package:duepay/views/extrato.dart';
 import 'package:duepay/views/login.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
           Routes.LOGIN: (_) => Login(),
           Routes.EXTRATO: (_) => Extrato(),
           Routes.EMPRESTIMO: (_) => Emprestimo(),
+          Routes.EMP_TIMELINE: (_) => Timeline(),
           Routes.EMP_SIMULA: (_) => Simulacao(),
           Routes.EMP_CONSULTA: (_) => Consulta(),
         },
