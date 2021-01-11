@@ -27,6 +27,7 @@ dependencies:
   provider: 
   timeline_tile: ^1.0.0
   shared_preferences: ^0.5.12+4
+  flutter_masked_text: ^0.8.0
 
 
   # The following adds the Cupertino Icons font to your application.

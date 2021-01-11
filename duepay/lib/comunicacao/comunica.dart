@@ -1,7 +1,8 @@
 import 'dart:convert';
+import 'package:duepay/util/routes.dart';
 import 'package:duepay/util/storage.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 
 class Comunica {
   //static final server = 'http://10.0.2.2:82/';
@@ -20,8 +21,8 @@ class Comunica {
     return response.body;
   }
 
-  static bool checkToken(String resp) {
-    if (resp == 'Token Invalido!') {
+  static bool checkToken(Response resp) {
+    if (resp.statusCode == 401) {
       Storage.remove('user');
       //Navigator.of(context).pushNamed(Routes.EXTRATO);
       return false;

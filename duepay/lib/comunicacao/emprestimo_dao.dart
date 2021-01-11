@@ -38,6 +38,9 @@ class EmprestimoDao extends Comunica {
     var response =
         await http.post(url, body: json.encode(data), headers: header);
 
+    bool test = Comunica.checkToken(response);
+    print(response.statusCode);
+
     return response.body;
   }
 
