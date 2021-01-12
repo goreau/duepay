@@ -216,6 +216,8 @@ class _SimulacaoState extends State<Simulacao> {
           ',' +
           coisa[0]['total'].toString() +
           ';';
+      Tabela t = Tabela.fromJson(coisa[0]);
+      print(t);
     }
     line = line.substring(0, line.length - 1);
 
@@ -261,7 +263,7 @@ class _SimulacaoState extends State<Simulacao> {
                     placeholder: false,
                   ),
                   DataCell(
-                    Text(item.valor_parcelas.toString()),
+                    Text(item.valor_parcela.toString()),
                     showEditIcon: false,
                     placeholder: false,
                   ),
@@ -287,7 +289,7 @@ class _SimulacaoState extends State<Simulacao> {
   }
 
   seleciona(Tabela opt) {
-    vlParcelas.updateValue(opt.valor_parcelas);
+    vlParcelas.updateValue(opt.valor_parcela);
     vlTotal.updateValue(opt.total);
     showDialog(
       context: context,
@@ -589,7 +591,7 @@ class Tabela {
       return Tabela(
         json['numero_parcelas'] as int,
         json['valor_parcela'] as double,
-        json['valor_requerido'] as double,
+        double.parse(json['valor_requerido'].toString()),
         json['valor_financiado'] as double,
         json['total'] as double,
         json['juros'] as double,
@@ -600,7 +602,7 @@ class Tabela {
         json['aliquota_iof_adicional'] as double,
         json['tot_iof'] as double,
         json['tot_dcp'] as double,
-        json['valor_tac'] as double,
+        double.parse(json['valor_tac'].toString()),
         json['cet_a'] as double,
         json['cet_m'] as double,
         _tags,
@@ -623,6 +625,7 @@ class Tabela {
         json['valor_tac'] as double,
         json['cet_a'] as double,
         json['cet_m'] as double,
+        null,
       );
     }
   }
