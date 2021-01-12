@@ -59,4 +59,20 @@ class EmprestimoDao extends Comunica {
 
     return response.body;
   }
+
+  static Future<String> putBanco(String dados, Usuario user) async {
+    var url = server + 'bank/gravaproposta';
+
+    // Store all data with Param Name.
+    // var data = dados;
+    var header = {
+      'Content-Type': 'application/json',
+      'X-Auth-Token-Update': user.token
+    };
+
+    // Starting Web API Call.
+    var response = await http.post(url, body: dados, headers: header);
+
+    return response.body;
+  }
 }

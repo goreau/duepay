@@ -25,6 +25,8 @@ class _SimulacaoState extends State<Simulacao> {
   String _parcelas;
   Widget tab;
 
+  Tabela currentOption;
+
   final _form = GlobalKey<FormState>();
   final _senhaController = TextEditingController();
 
@@ -206,20 +208,20 @@ class _SimulacaoState extends State<Simulacao> {
   }
 
   criaTabela(List<dynamic> lista) {
-    String line = '';
+    List<Tabela> linhas = [];
     for (int i = 0; i < lista.length; i++) {
       final coisa = jsonDecode(lista[i]['dados']);
 
-      line += coisa[0]['numero_parcelas'].toString() +
+      /* line += coisa[0]['numero_parcelas'].toString() +
           ',' +
           coisa[0]['valor_parcela'].toString() +
           ',' +
           coisa[0]['total'].toString() +
-          ';';
+          ';';*/
       Tabela t = Tabela.fromJson(coisa[0]);
-      print(t);
+      linhas.add(t);
     }
-    line = line.substring(0, line.length - 1);
+    // line = line.substring(0, line.length - 1);
 
     return DataTable(
       columns: [
@@ -236,23 +238,15 @@ class _SimulacaoState extends State<Simulacao> {
           label: Text('SELEC.'),
         ),
       ],
-      rows: _criarLinhaTable(line),
+      rows: _criarLinhaTable(linhas),
     );
   }
 
-  _criarLinhaTable(String listaNomes) {
+  _criarLinhaTable(List<Tabela> linhas) {
     int val = 0;
     int cont = 0;
     List<DataRow> rows = [];
-    List<Tabela> linhas = [];
-    listaNomes.split(';').map((linha) {
-      List<String> p = linha.split(',');
-      print(p);
-      /* Tabela t =
-          Tabela(int.parse(p[0]), double.parse(p[1]), double.parse(p[2]));*/
 
-      // linhas.add(t);
-    }).toList();
     linhas
         .map((item) => rows.add(
               DataRow(
@@ -443,6 +437,7 @@ class _SimulacaoState extends State<Simulacao> {
               child: Text('Confirmo a Opção'),
               onPressed: () {
                 Navigator.of(context).pop();
+                currentOption = opt;
                 autoriza();
               },
             ),
@@ -532,16 +527,68 @@ class _SimulacaoState extends State<Simulacao> {
     );
   }
 
-  empenho(int opcao) {
+  empenho(int opcao) async {
     if (opcao == 0) {
       print('Cara cancelou');
     } else {
-      if (_form.currentState.validate()) {
-        _form.currentState.save();
+      int idBanco = 0;
+      // visible = true;
+      var data = jsonEncode({
+        'post': {
+          'opcao': {
+            'dt_solicita': currentOption.data_emprestimo,
+            'proposta': currentOption.toJson(),
+            'status': 0,
+            'cartao': user.cartao,
+          }
+        }
+      });
+      try {
+        final resp = jsonDecode(await EmprestimoDao.putBanco(data, logUser));
+
+        if (resp['success']) {
+          var rets = jsonDecode(resp['numero_ccb']);
+          setState(() {
+            idBanco = rets;
+          });
+        }
+
+        //  setState(() {});
+      } catch (Excepetion) {
+        print('fodeu com tudo' + Excepetion.toString());
       }
-      print(senha);
+
+      /* if (_form.currentState.validate()) {
+        _form.currentState.save();
+      }*/
     }
   }
+}
+
+class Vencimento {
+  String data_vencimento;
+  double saldo_devedor;
+  int prazo_dias;
+  double valor_parcela;
+  double valor_principal;
+  double valor_juros;
+  int numero_documento;
+  double valor_iof_parcela;
+  double valor_tarifa_parcela;
+  double capital_amortizado;
+
+  Vencimento(
+    this.data_vencimento,
+    this.saldo_devedor,
+    this.prazo_dias,
+    this.valor_parcela,
+    this.valor_principal,
+    this.valor_juros,
+    this.numero_documento,
+    this.valor_iof_parcela,
+    this.valor_tarifa_parcela,
+    this.capital_amortizado,
+  )
 }
 
 class Tabela {
@@ -589,46 +636,86 @@ class Tabela {
       List<Titulo> _tags =
           tagObjsJson.map((tagJson) => Titulo.fromJson(tagJson)).toList();
       return Tabela(
-        json['numero_parcelas'] as int,
-        json['valor_parcela'] as double,
+        int.parse(json['numero_parcelas'].toString()),
+        double.parse(json['valor_parcela'].toString()),
         double.parse(json['valor_requerido'].toString()),
-        json['valor_financiado'] as double,
-        json['total'] as double,
-        json['juros'] as double,
+        double.parse(json['valor_financiado'].toString()),
+        double.parse(json['total'].toString()),
+        double.parse(json['juros'].toString()),
         json['data_emprestimo'],
         json['primeiro_vencimento'],
         json['ultimo_vencimento'],
-        json['aliquota_iof_dia'] as double,
-        json['aliquota_iof_adicional'] as double,
-        json['tot_iof'] as double,
-        json['tot_dcp'] as double,
+        double.parse(json['aliquota_iof_dia'].toString()),
+        double.parse(json['aliquota_iof_adicional'].toString()),
+        double.parse(json['tot_iof'].toString()),
+        double.parse(json['tot_dcp'].toString()),
         double.parse(json['valor_tac'].toString()),
-        json['cet_a'] as double,
-        json['cet_m'] as double,
+        double.parse(json['cet_a'].toString()),
+        double.parse(json['cet_m'].toString()),
         _tags,
       );
     } else {
       return Tabela(
-        json['numero_parcelas'] as int,
-        json['valor_parcela'] as double,
-        json['valor_requerido'] as double,
-        json['valor_financiado'] as double,
-        json['total'] as double,
-        json['juros'] as double,
+        int.parse(json['numero_parcelas'].toString()),
+        double.parse(json['valor_parcela'].toString()),
+        double.parse(json['valor_requerido'].toString()),
+        double.parse(json['valor_financiado'].toString()),
+        double.parse(json['total'].toString()),
+        double.parse(json['juros'].toString()),
         json['data_emprestimo'],
         json['primeiro_vencimento'],
         json['ultimo_vencimento'],
-        json['aliquota_iof_dia'] as double,
-        json['aliquota_iof_adicional'] as double,
-        json['tot_iof'] as double,
-        json['tot_dcp'] as double,
-        json['valor_tac'] as double,
-        json['cet_a'] as double,
-        json['cet_m'] as double,
+        double.parse(json['aliquota_iof_dia'].toString()),
+        double.parse(json['aliquota_iof_adicional'].toString()),
+        double.parse(json['tot_iof'].toString()),
+        double.parse(json['tot_dcp'].toString()),
+        double.parse(json['valor_tac'].toString()),
+        double.parse(json['cet_a'].toString()),
+        double.parse(json['cet_m'].toString()),
         null,
       );
     }
   }
+
+  Map<String, dynamic> toJson() => {
+        'numero_parcelas': numero_parcelas,
+        'valor_parcela': valor_parcela,
+        'valor_requerido': valor_requerido,
+        'valor_financiado': valor_financiado,
+        'total': total,
+        'juros': juros,
+        'data_emprestimo': data_emprestimo,
+        'primeiro_vencimento': primeiro_vencimento,
+        'ultimo_vencimento': ultimo_vencimento,
+        'aliquota_iof_dia': aliquota_iof_dia,
+        'aliquota_iof_adicional': aliquota_iof_adicional,
+        'tot_iof': tot_iof,
+        'tot_dcp': tot_dcp,
+        'valor_tac': valor_tac,
+        'cet_a': cet_a,
+        'cet_m': cet_m,
+        'titulos': titulos,
+      };
+
+  Map<String, dynamic> toCCB() => {
+        'numero_parcelas': numero_parcelas,
+        'valor_parcela': valor_parcela,
+        'valor_requerido': valor_requerido,
+        'valor_financiado': valor_financiado,
+        'total': total,
+        'juros': juros,
+        'data_emprestimo': data_emprestimo,
+        'primeiro_vencimento': primeiro_vencimento,
+        'ultimo_vencimento': ultimo_vencimento,
+        'aliquota_iof_dia': aliquota_iof_dia,
+        'aliquota_iof_adicional': aliquota_iof_adicional,
+        'tot_iof': tot_iof,
+        'tot_dcp': tot_dcp,
+        'valor_tac': valor_tac,
+        'cet_a': cet_a,
+        'cet_m': cet_m,
+        'titulos': titulos,
+      };
 }
 
 class Titulo {
@@ -656,17 +743,43 @@ class Titulo {
 
   factory Titulo.fromJson(dynamic json) {
     return Titulo(
-      json['saldo_devedor'] as double,
-      json['juros'] as double,
-      json['valor_prestacao'] as double,
-      json['amortizacao'] as double,
-      json['numero_titulo'] as int,
+      double.parse(json['saldo_devedor'].toString()),
+      double.parse(json['juros'].toString()),
+      double.parse(json['valor_prestacao'].toString()),
+      double.parse(json['amortizacao'].toString()),
+      int.parse(json['numero_titulo'].toString()),
       json['vencimento'],
-      json['dias_corridos'] as int,
-      json['taxa_iof'] as double,
-      json['valor_iof'] as double,
+      int.parse(json['dias_corridos'].toString()),
+      double.parse(json['taxa_iof'].toString()),
+      double.parse(json['valor_iof'].toString()),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'saldo_devedor': saldo_devedor,
+        'juros': juros,
+        'valor_prestacao': valor_prestacao,
+        'amortizacao': amortizacao,
+        'numero_titulo': numero_titulo,
+        'vencimento': vencimento,
+        'dias_corridos': dias_corridos,
+        'taxa_iof': taxa_iof,
+        'valor_iof': valor_iof,
+      };
+
+   Map<String, dynamic> toVencimento(double principal) => {
+        'saldo_devedor': saldo_devedor,
+        'valor_juros': juros,
+        'valor_parcela': valor_prestacao,
+        'capital_amortizado': amortizacao,
+        'numero_documento': numero_titulo.toString().padLeft(2, '0'),
+        'data_vencimento': vencimento,
+        'prazo_dias': dias_corridos,
+        'taxa_iof': taxa_iof,
+        'valor_iof_parcela': valor_iof,
+        'valor_tarifa_parcela': 0,
+        'valor_principal': principal,
+      };  
 }
 
 class UserEmprestimo {

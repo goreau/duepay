@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
 class Comunica {
-  //static final server = 'http://10.0.2.2:82/';
-  static final server = 'https://api.duebank.com.br/';
+  static final server = 'http://10.0.2.2:82/';
+  //static final server = 'https://apihomologa.duebank.com.br/';
 
   static Future<String> login(String usuario, String senha) async {
     var url = server + 'login/authentication';
