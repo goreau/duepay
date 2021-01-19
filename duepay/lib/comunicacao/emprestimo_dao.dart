@@ -75,4 +75,100 @@ class EmprestimoDao extends Comunica {
 
     return response.body;
   }
+
+  static Future<String> empenhoTelenet(String dados, Usuario user) async {
+    var url = server + 'bank/solicitapagamento';
+
+    // Store all data with Param Name.
+    // var data = dados;
+    var header = {
+      'Content-Type': 'application/json',
+      'X-Auth-Token-Update': user.token
+    };
+
+    // Starting Web API Call.
+    var response = await http.post(url, body: dados, headers: header);
+
+    return response.body;
+  }
+
+  static Future<String> importaOperacao(String dados, Usuario user) async {
+    var url = server + 'emprestimo/importar';
+
+    // Store all data with Param Name.
+    // var data = dados;
+    var header = {
+      'Content-Type': 'application/json',
+      'X-Auth-Token-Update': user.token
+    };
+
+    // Starting Web API Call.
+    var response = await http.post(url, body: dados, headers: header);
+
+    return response.body;
+  }
+
+  static Future<String> updateProposta(String dados, Usuario user) async {
+    var url = server + 'bank/updateproposta';
+
+    // Store all data with Param Name.
+    // var data = dados;
+    var header = {
+      'Content-Type': 'application/json',
+      'X-Auth-Token-Update': user.token
+    };
+
+    // Starting Web API Call.
+    var response = await http.post(url, body: dados, headers: header);
+
+    return response.body;
+  }
+
+  static Future<String> removeProposta(String dados, Usuario user) async {
+    var url = server + 'bank/excluiproposta';
+
+    // Store all data with Param Name.
+    // var data = dados;
+    var header = {
+      'Content-Type': 'application/json',
+      'X-Auth-Token-Update': user.token
+    };
+
+    // Starting Web API Call.
+    var response = await http.post(url, body: dados, headers: header);
+
+    return response.body;
+  }
+
+  static Future<String> dadosProposta(String dados, Usuario user) async {
+    var url = server + 'bank/documentosproposta';
+
+    // Store all data with Param Name.
+    // var data = dados;
+    var header = {
+      'Content-Type': 'application/json',
+      'X-Auth-Token-Update': user.token
+    };
+
+    // Starting Web API Call.
+    var response = await http.post(url, body: dados, headers: header);
+
+    return response.body;
+  }
+
+  static Future<String> consultaPropostas(Usuario user) async {
+    var url = server + 'bank/consultaproposta';
+
+    // Store all data with Param Name.
+    // var data = dados;
+    var header = {
+      'Content-Type': 'application/json',
+      'X-Auth-Token-Update': user.token
+    };
+
+    // Starting Web API Call.
+    var response = await http.get(url, headers: header);
+
+    return response.body;
+  }
 }

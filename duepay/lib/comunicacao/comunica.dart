@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:duepay/models/usuario.dart';
 import 'package:duepay/util/routes.dart';
 import 'package:duepay/util/storage.dart';
 import 'package:http/http.dart' as http;
@@ -17,6 +18,20 @@ class Comunica {
     // Starting Web API Call.
     var response = await http.post(url,
         body: json.encode(data), headers: {'Content-Type': 'application/json'});
+
+    return response.body;
+  }
+
+  static Future<String> getUsuario(Usuario user) async {
+    var url = server + 'dado-usuario';
+
+    var header = {
+      'Content-Type': 'application/json',
+      'X-Auth-Token-Update': user.token
+    };
+
+    // Starting Web API Call.
+    var response = await http.get(url, headers: header);
 
     return response.body;
   }

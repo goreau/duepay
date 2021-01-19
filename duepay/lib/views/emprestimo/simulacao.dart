@@ -1,7 +1,8 @@
 import 'dart:convert';
-
+import 'package:duepay/comunicacao/comunica.dart';
 import 'package:duepay/comunicacao/emprestimo_dao.dart';
 import 'package:duepay/models/usuario.dart';
+
 import 'package:duepay/util/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -160,24 +161,45 @@ class _SimulacaoState extends State<Simulacao> {
   }
 
   void doSimulacao() async {
-    try {
-      final resp = jsonDecode(
-          await EmprestimoDao.getParcelas(currency.numberValue, user));
-      _parcelas = '[';
-      if (resp['success']) {
-        var rets = resp['parcelas'];
-        rets.where((text) => text != null).forEach((text) {
-          _parcelas += text['numeroParcelas'].toString() + ',';
+    if (currency.numberValue > maximo) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text(
+                'Você não pode solicitar um valor maior que seu limite para empréstimo, de  R\$ $maximo'),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      currency.updateValue(0.0);
+    } else {
+      try {
+        final resp = jsonDecode(
+            await EmprestimoDao.getParcelas(currency.numberValue, user));
+        _parcelas = '[';
+        if (resp['success']) {
+          var rets = resp['parcelas'];
+          rets.where((text) => text != null).forEach((text) {
+            _parcelas += text['numeroParcelas'].toString() + ',';
+          });
+          _parcelas = _parcelas.substring(0, _parcelas.length - 1) + ']';
+        }
+        //print(_parcelas);
+        await getTabela(_parcelas);
+        setState(() {
+          tabela = true;
         });
-        _parcelas = _parcelas.substring(0, _parcelas.length - 1) + ']';
+      } catch (Excepetion) {
+        print('fodeu mais' + Excepetion.toString());
       }
-      //print(_parcelas);
-      await getTabela(_parcelas);
-      setState(() {
-        tabela = true;
-      });
-    } catch (Excepetion) {
-      print('fodeu mais' + Excepetion.toString());
     }
   }
 
@@ -282,6 +304,7 @@ class _SimulacaoState extends State<Simulacao> {
     return rows;
   }
 
+//Usuario escolheu uma proposta -  se confrmar a opção vai salvar no banco
   seleciona(Tabela opt) {
     vlParcelas.updateValue(opt.valor_parcela);
     vlTotal.updateValue(opt.total);
@@ -435,10 +458,31 @@ class _SimulacaoState extends State<Simulacao> {
             ),
             FlatButton(
               child: Text('Confirmo a Opção'),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
                 currentOption = opt;
-                autoriza();
+                int idBanco = await empenho();
+                if (idBanco == 0) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: new Text(
+                            'Houve um erro gravando as informações na base de dados.'),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: new Text("OK"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  autoriza(idBanco);
+                }
               },
             ),
           ],
@@ -447,7 +491,8 @@ class _SimulacaoState extends State<Simulacao> {
     );
   }
 
-  autoriza() {
+  //pega a senha de compras do usuario e reserva os valores na Telenet
+  autoriza(int idBanco) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -487,7 +532,6 @@ class _SimulacaoState extends State<Simulacao> {
                         onSaved: (value) {
                           setState(() {
                             senha = value;
-                            print(senha);
                           });
                         },
                       ),
@@ -497,7 +541,7 @@ class _SimulacaoState extends State<Simulacao> {
                           RaisedButton(
                             onPressed: () {
                               Navigator.of(context).pop();
-                              empenho(0);
+                              //chamar o cancela, apagando do banco
                             },
                             color: Color.fromRGBO(57, 72, 87, 1),
                             textColor: Colors.white,
@@ -507,12 +551,12 @@ class _SimulacaoState extends State<Simulacao> {
                           RaisedButton(
                             onPressed: () {
                               Navigator.of(context).pop();
-                              empenho(1);
+                              reservaTelenet(idBanco);
                             },
                             color: Color.fromRGBO(57, 72, 87, 1),
                             textColor: Colors.white,
                             padding: EdgeInsets.fromLTRB(9, 9, 9, 9),
-                            child: Text('Entrar'),
+                            child: Text('Prosseguir'),
                           ),
                         ],
                       )
@@ -527,40 +571,158 @@ class _SimulacaoState extends State<Simulacao> {
     );
   }
 
-  empenho(int opcao) async {
-    if (opcao == 0) {
-      print('Cara cancelou');
-    } else {
-      int idBanco = 0;
-      // visible = true;
-      var data = jsonEncode({
-        'post': {
-          'opcao': {
-            'dt_solicita': currentOption.data_emprestimo,
-            'proposta': currentOption.toJson(),
-            'status': 0,
-            'cartao': user.cartao,
-          }
+  //grava na base nossa os dados da ´roposta selecionada
+  Future<int> empenho() async {
+    int idBanco = 0;
+    // visible = true;
+    var data = jsonEncode({
+      'post': {
+        'opcao': {
+          'dt_solicita': currentOption.data_emprestimo,
+          'proposta': currentOption.toJson(),
+          'status': 0,
+          'cartao': user.cartao,
         }
-      });
-      try {
-        final resp = jsonDecode(await EmprestimoDao.putBanco(data, logUser));
+      }
+    });
+    try {
+      final resp = jsonDecode(await EmprestimoDao.putBanco(data, logUser));
 
-        if (resp['success']) {
-          var rets = jsonDecode(resp['numero_ccb']);
-          setState(() {
-            idBanco = rets;
-          });
-        }
+      if (resp['success']) {
+        var ret = jsonDecode(resp['numero_ccb']);
 
-        //  setState(() {});
-      } catch (Excepetion) {
-        print('fodeu com tudo' + Excepetion.toString());
+        setState(() {
+          idBanco = ret;
+        });
       }
 
-      /* if (_form.currentState.validate()) {
-        _form.currentState.save();
-      }*/
+      //  setState(() {});
+    } catch (Excepetion) {
+      print('fodeu com tudo' + Excepetion.toString());
+      // return false;
+    }
+    return idBanco;
+  }
+
+  Future<bool> reservaTelenet(int ret) async {
+    if (_form.currentState.validate()) {
+      _form.currentState.save();
+    }
+
+    DateTime now = new DateTime.now();
+    DateTime date = new DateTime(now.year, now.month, now.day);
+    var data = jsonEncode({
+      'post': {
+        'dados': {
+          'numeroCartao': user.cartao, // user.cartao,
+          'tipoCartao': 0, // padrão para pós pago
+          'senhaCartao': senha,
+          'nsuHost': ret.toString().padLeft(6, '0'),
+          'dataHoraTransacao': date.toString(),
+          'valor': currentOption.valor_financiado,
+          'numeroParcelas': currentOption.numero_parcelas,
+        }
+      }
+    });
+    try {
+      final resp =
+          jsonDecode(await EmprestimoDao.empenhoTelenet(data, logUser));
+      // Map<String, dynamic> resp;
+      // resp['success'] = false;
+      // resp['message'] = 'SENHA ERRADA';
+      if (resp['success']) {
+        Map<String, dynamic> user = await currentOption.getUser(logUser);
+        String dados = jsonEncode(currentOption.toCCB(ret, user));
+        updateProposta(ret, dados, 1);
+        return true;
+      } else {
+        String msg = resp['message'];
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: new Text(msg),
+              actions: <Widget>[
+                FlatButton(
+                  child: new Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+        removeProposta(ret);
+        return false;
+      }
+
+      //  setState(() {});
+    } catch (Excepetion) {
+      print('fodeu com tudo' + Excepetion.toString());
+      return false;
+    }
+  }
+
+  Future<bool> importaOperacao(int ret) async {
+    try {
+      Map<String, dynamic> user = await currentOption.getUser(logUser);
+      String dados = jsonEncode(currentOption.toCCB(ret, user));
+      var data = jsonEncode({
+        'ccb': dados,
+      });
+      final resp =
+          jsonDecode(await EmprestimoDao.importaOperacao(data, logUser));
+
+      if (resp['status_retorno'] != 'Erro') {
+        int id = ret;
+        String ccb = resp['retorno'][0]['cliente']['operacao'];
+        int status = resp['retorno'][0]['cliente']['cod_status'];
+        updateProposta(id, ccb, status);
+      } else {
+        print('não foi possível reservar os valores na telenet');
+        return false;
+      }
+
+      //  setState(() {});
+    } catch (Excepetion) {
+      print('fodeu com tudo' + Excepetion.toString());
+      return false;
+    }
+  }
+
+  bool updateProposta(int id, String ccb, int status) {
+    try {
+      var data = jsonEncode({
+        'id': {
+          'id': id,
+          'ccb': ccb,
+          'status': status,
+        }
+      });
+
+      EmprestimoDao.updateProposta(data, logUser);
+      return true;
+    } catch (e) {
+      print('fodeu com tudo' + e.toString());
+      return false;
+    }
+  }
+
+  removeProposta(int id) {
+    try {
+      var data = jsonEncode({
+        'post': {
+          'id': id,
+        }
+      });
+
+      EmprestimoDao.removeProposta(data, logUser);
+      print('removeu');
+      return true;
+    } catch (e) {
+      print('fodeu com tudo' + e.toString());
+      return false;
     }
   }
 }
@@ -588,7 +750,7 @@ class Vencimento {
     this.valor_iof_parcela,
     this.valor_tarifa_parcela,
     this.capital_amortizado,
-  )
+  );
 }
 
 class Tabela {
@@ -609,6 +771,7 @@ class Tabela {
   double cet_a;
   double cet_m;
   List<Titulo> titulos;
+  String user;
 
   Tabela(
     this.numero_parcelas,
@@ -629,6 +792,12 @@ class Tabela {
     this.cet_m,
     this.titulos,
   );
+
+  Future<Map<String, dynamic>> getUser(Usuario loguser) async {
+    var teste = jsonDecode(await Comunica.getUsuario(loguser));
+    return teste['dados'];
+    //print(retUser);
+  }
 
   factory Tabela.fromJson(dynamic json) {
     if (json['titulos'] != null) {
@@ -697,24 +866,103 @@ class Tabela {
         'titulos': titulos,
       };
 
-  Map<String, dynamic> toCCB() => {
-        'numero_parcelas': numero_parcelas,
+  Map<String, dynamic> toCCB(int ccb, Map<String, dynamic> user) => {
+        'numero_ccb': ccb,
+        'data_aceite': data_emprestimo,
+        'data_liberacao': data_emprestimo,
+        'valor_total': valor_financiado,
+        'valor_iof': aliquota_iof_dia,
+        'produto': 10,
+        'taxa': juros * 100,
+        'modalidade': 'EM',
+        'periodicidade': 'M',
+        'perc_iof': 1,
+        'data_primeiro_vencimento': primeiro_vencimento,
         'valor_parcela': valor_parcela,
+        'valor_tarifas': '0', // Definido que não terá custo para o contratante
+        'tarifa_titulo': '0',
+        'tac': valor_tac,
+        'id_cliente': '',
+        'rg': user['rg'],
+        'cpfcnpj_cliente': user['cpf'],
+        'nome_cliente': user['nome'],
+        'razao_social': user['nome'],
+        'email_cliente': user['email'],
+        'nascimento': user['nascimento'],
+        'endereco_cliente': user['endereco'],
+        'numendereco': user['numero'],
+        'bairro_cliente': user['bairro'],
+        'cidade_cliente': user['cidade'],
+        'estado_cliente': user['estado'],
+        'cep_cliente': user['cep'],
+        'telefone_cliente': user['telefone'],
+        'orgaorg': user['rg_orgao'],
+        'uf_orgaorg': user['rg_uf'],
+        'nacionalidade': user['nacionalidade'],
+        'receita_mes_01': '',
+        'receita_mes_02': '',
+        'receita_mes_03': '',
+        'receita_mes_04': '',
+        'receita_mes_05': '',
+        'receita_mes_06': '',
+        'receita_mes_07': '',
+        'receita_mes_08': '',
+        'receita_mes_09': '',
+        'receita_mes_10': '',
+        'receita_mes_11': '',
+        'receita_mes_12': '',
+        'tipo_documento': '',
+        'escolaridade': 'OK',
+        'estado_civil': 'OK',
+        'tiporesidencia': 'OK',
+        'inscestadual': '',
+        'complemento': '',
+        'sexo': '',
+        'dtexprg': '',
+        'naturalidade': '',
+        'cpfconj': '',
+        'nomeconjuge': '',
+        'dtnascconjuge': '',
+        'mae': user['mae'],
+        'pai': '',
+        'numdependentes': '',
+        'fonecel': '',
+        'temporesidencia': '',
+        'vlaluguel': '',
+        'tipo_endereco': '',
+        'avalistas': [
+          {'nome_avalista': '', 'cpf_avalista': '', 'grau_parentesco': ''}
+        ],
+        'socios': [
+          {'cpf_socio': '', 'nome_socio': ''}
+        ],
+        'conta_bancaria': {
+          'cod_banco': '082', // this.user.cod_banco,
+          'conta': user['conta'],
+          'contad': user['conta_dv'],
+          'agencia': '0001', // this.user.agencia,
+          'agenciad': '0', // this.user.agencia_dv,
+          'operacao': '',
+          'conjunta': '',
+          'tipo': '',
+          'cpf_favorecido': user['cpf'],
+        },
+        'vencimentos': titulos,
+        /* 'prazo': numero_parcelas,
+
         'valor_requerido': valor_requerido,
-        'valor_financiado': valor_financiado,
+
         'total': total,
-        'juros': juros,
-        'data_emprestimo': data_emprestimo,
-        'primeiro_vencimento': primeiro_vencimento,
+
         'ultimo_vencimento': ultimo_vencimento,
         'aliquota_iof_dia': aliquota_iof_dia,
-        'aliquota_iof_adicional': aliquota_iof_adicional,
+        'perc_iof_adicional': aliquota_iof_adicional,
         'tot_iof': tot_iof,
         'tot_dcp': tot_dcp,
-        'valor_tac': valor_tac,
+
         'cet_a': cet_a,
         'cet_m': cet_m,
-        'titulos': titulos,
+        'titulos': titulos,*/
       };
 }
 
@@ -767,7 +1015,7 @@ class Titulo {
         'valor_iof': valor_iof,
       };
 
-   Map<String, dynamic> toVencimento(double principal) => {
+  Map<String, dynamic> toCCB(double principal) => {
         'saldo_devedor': saldo_devedor,
         'valor_juros': juros,
         'valor_parcela': valor_prestacao,
@@ -779,7 +1027,7 @@ class Titulo {
         'valor_iof_parcela': valor_iof,
         'valor_tarifa_parcela': 0,
         'valor_principal': principal,
-      };  
+      };
 }
 
 class UserEmprestimo {

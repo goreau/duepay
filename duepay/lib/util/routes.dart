@@ -5,4 +5,5 @@ class Routes {
   static const EMP_TIMELINE = '/emprestimo/timeline';
   static const EMP_SIMULA = '/emprestimo/simulacao';
   static const EMP_CONSULTA = '/emprestimo/consulta';
+  static const VANTAGENS = '/emprestimo/consulta';
 }
